@@ -1,6 +1,6 @@
 # DDS Viewer - VSCode扩展
 
-![DDS Viewer Logo]([icon.png](https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/blobs/53ee76b835e5aee9f6e1db04cd266850341b8231/icon.png))
+![DDS Viewer Logo](https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/blobs/53ee76b835e5aee9f6e1db04cd266850341b8231/icon.png)
 
 一个专业的VSCode扩展，用于预览和导出DDS（DirectDraw Surface）图像文件。支持多种DDS格式，提供直观的UI界面和丰富的图像操作功能。
 
