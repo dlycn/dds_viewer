@@ -1,21 +1,44 @@
 {
   "name": "dds-viewer",
-  "displayName": "dds-viewer",
+  "displayName": "DDS Viewer",
   "description": "A VSCode extension for previewing DDS image files",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.105.0"
   },
   "categories": [
+    "Visualization",
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+  ],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "dds-viewer.helloWorld",
-      "title": "Hello World"
-    }]
+    "customEditors": [
+      {
+        "viewType": "dds-viewer.preview",
+        "displayName": "DDS Preview",
+        "selector": [
+          {
+            "filenamePattern": "*.dds"
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "dds-viewer.previewDDS",
+        "title": "Preview DDS File",
+        "category": "DDS Viewer"
+      }
+    ],
+    "menus": {
+      "command-palette": [
+        {
+          "command": "dds-viewer.previewDDS"
+        }
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint .",
