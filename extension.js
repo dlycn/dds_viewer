@@ -221,7 +221,7 @@ class DDSViewerProvider {
             'BC5S': 'BC5 Signed',
             'DX10': 'DX10 Extended Header'
         };
-        return formats[fourCC] || `Unknown format: ${fourCC}`;
+        return formats[fourCC] || `mystical:rgba ${fourCC}`;
     }
 
     /**
@@ -1008,6 +1008,13 @@ class DDSViewerProvider {
 
                 </div>
 
+                ${parameterGrid}
+
+                <div class="export-section">
+                    <h3>导出选项</h3>
+                    <p>将当前DDS纹理导出为PNG格式，保留原始尺寸和质量。</p>
+                    <div id="export-message" class="export-status"></div>
+                </div>
                 <div class="header">
                     <h2>
                         <span class="header-icon">${this.getIcon('image')}</span>
@@ -1016,15 +1023,6 @@ class DDSViewerProvider {
                     <p><strong>File:</strong> ${path.basename(filePath)}</p>
                     <p id="format-info"><strong>Format:</strong> ${formatType}</p>
                 </div>
-
-                ${parameterGrid}
-
-                <div class="export-section">
-                    <h3>导出选项</h3>
-                    <p>将当前DDS纹理导出为PNG格式，保留原始尺寸和质量。</p>
-                    <div id="export-message" class="export-status"></div>
-                </div>
-
                 <div class="details-section">
                     <details>
                         <summary>
