@@ -13,6 +13,7 @@
   "activationEvents": [
   ],
   "main": "./extension.js",
+  "icon": "./icon.png",
   "contributes": {
     "customEditors": [
       {
@@ -52,5 +53,9 @@
     "eslint": "^9.36.0",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2"
+  },
+"repository": {
+    "type": "git",
+    "url": "https://gitcode.com/StarsAll_InFrost/dds-viewer.git"
   }
 }

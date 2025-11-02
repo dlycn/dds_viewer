@@ -4,7 +4,7 @@ const fs = require('fs');
 
 class DDSDocument {
     constructor(uri) {
-        this.uri = uri;
+        this.uri = uri; // DDS文件的URI
     }
     
     dispose() {
@@ -14,7 +14,7 @@ class DDSDocument {
 
 class DDSViewerProvider {
     /**
-     * @param {vscode.ExtensionContext} context
+     * @param {vscode.ExtensionContext} context - VSCode扩展上下文
      */
     constructor(context) {
         this.context = context;
@@ -22,14 +22,18 @@ class DDSViewerProvider {
     }
 
     /**
-     * 必需的：打开自定义文档
+     * 打开自定义文档
+     * @param {vscode.Uri} uri - DDS文件的URI
+     * @returns {Promise<DDSDocument>} DDS文档实例
      */
     async openCustomDocument(uri) {
         return new DDSDocument(uri);
     }
 
     /**
-     * 必需的：解析自定义编辑器
+     * 解析自定义编辑器
+     * @param {DDSDocument} document - DDS文档实例
+     * @param {vscode.WebviewPanel} webviewPanel - Webview面板
      */
     async resolveCustomEditor(document, webviewPanel) {
         const filePath = document.uri.fsPath;
@@ -80,6 +84,8 @@ class DDSViewerProvider {
 
     /**
      * 处理 PNG 导出
+     * @param {string} pngData - Base64编码的PNG数据
+     * @param {string} originalFilePath - 原始DDS文件路径
      */
     async handleExportPNG(pngData, originalFilePath) {
         try {
@@ -146,6 +152,8 @@ class DDSViewerProvider {
 
     /**
      * 解析 DDS 文件头信息
+     * @param {Buffer} buffer - DDS文件缓冲区
+     * @returns {Object} DDS文件信息对象
      */
     parseDDSHeader(buffer) {
         if (buffer.length < 128) {
@@ -197,6 +205,8 @@ class DDSViewerProvider {
 
     /**
      * 获取 FourCC 代码的描述
+     * @param {string} fourCC - FourCC代码
+     * @returns {string} 格式描述
      */
     getFourCCDescription(fourCC) {
         const formats = {
@@ -216,6 +226,8 @@ class DDSViewerProvider {
 
     /**
      * 检测 DDS 格式类型
+     * @param {Object} pixelFormat - 像素格式对象
+     * @returns {string} 格式类型
      */
     detectFormat(pixelFormat) {
         const fourCC = pixelFormat.fourCC.trim();
@@ -240,7 +252,93 @@ class DDSViewerProvider {
     }
 
     /**
+     * 生成SVG图标
+     * @param {string} iconName - 图标名称
+     * @returns {string} SVG图标HTML
+     */
+    getIcon(iconName) {
+        const icons = {
+            'image': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M14.5 3H1.5C0.7 3 0 3.7 0 4.5v7C0 12.3 0.7 13 1.5 13h13c0.8 0 1.5-0.7 1.5-1.5v-7C16 3.7 15.3 3 14.5 3zM1.5 4h13c0.3 0 0.5 0.2 0.5 0.5v4.7l-3.1-2.6c-0.2-0.2-0.5-0.2-0.7 0L9 8.3 6.6 6.1c-0.2-0.2-0.5-0.2-0.7 0L1 9.2V4.5C1 4.2 1.2 4 1.5 4zM15 11.5c0 0.3-0.2 0.5-0.5 0.5h-13c-0.3 0-0.5-0.2-0.5-0.5V10l4.3-3.4L9 9.7l2.4-2.4L15 9.1V11.5z"/>
+            </svg>`,
+            'dimensions': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M14 0H2C0.9 0 0 0.9 0 2v12c0 1.1 0.9 2 2 2h12c1.1 0 2-0.9 2-2V2C16 0.9 15.1 0 14 0zM2 14V2h12v12H2z"/>
+                <path d="M4 4h8v1H4zM4 7h8v1H4zM4 10h8v1H4z"/>
+            </svg>`,
+            'format': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M14 2H2C0.9 2 0 2.9 0 4v8c0 1.1 0.9 2 2 2h12c1.1 0 2-0.9 2-2V4C16 2.9 15.1 2 14 2zM2 14V4h12v10H2z"/>
+                <path d="M4 6h8v1H4zM4 8h6v1H4zM4 10h4v1H4z"/>
+            </svg>`,
+            'mipmap': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0L0 4v8l8 4 8-4V4L8 0zM2 5.2l6-3 6 3v5.6l-6 3-6-3V5.2z"/>
+                <path d="M4 7l4-2 4 2v4l-4 2-4-2V7z"/>
+            </svg>`,
+            'size': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M14 0H2C0.9 0 0 0.9 0 2v12c0 1.1 0.9 2 2 2h12c1.1 0 2-0.9 2-2V2C16 0.9 15.1 0 14 0zM2 14V2h12v12H2z"/>
+                <path d="M4 4h3v8H4zM9 4h3v5H9z"/>
+            </svg>`,
+            'code': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M5.7 11.3L2.4 8l3.3-3.3-1.4-1.4L0 8l4.3 4.3 1.4-1.4zM10.3 4.7L13.6 8l-3.3 3.3 1.4 1.4L16 8l-4.3-4.3-1.4 1.4z"/>
+            </svg>`,
+            'depth': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0L0 3v10l8 3 8-3V3L8 0zM2 4.6l6-2.2 6 2.2v6.8l-6 2.2-6-2.2V4.6z"/>
+            </svg>`,
+            'zoom-in': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M15.7 14.3l-3.8-3.8C12.5 9.5 13 8.3 13 7c0-3.3-2.7-6-6-6S1 3.7 1 7s2.7 6 6 6c1.3 0 2.5-0.5 3.5-1.2l3.8 3.8 0.4-0.4zM7 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/>
+                <path d="M8 5H6v2H4v1h2v2h1V8h2V7H8z"/>
+            </svg>`,
+            'zoom-out': `<svg width="16" height="16" view="0 0 16 16" fill="currentColor">
+                <path d="M15.7 14.3l-3.8-3.8C12.5 9.5 13 8.3 13 7c0-3.3-2.7-6-6-6S1 3.7 1 7s2.7 6 6 6c1.3 0 2.5-0.5 3.5-1.2l3.8 3.8 0.4-0.4zM7 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/>
+                <path d="M4 6h6v1H4z"/>
+            </svg>`,
+            'reset': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 3V1L5 4l3 3V5c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5H2c0 3.9 3.1 7 7 7s7-3.1 7-7-3.1-7-7-7z"/>
+            </svg>`,
+            'fit': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M0 1v14h16V1H0zM15 14H1V2h14v12z"/>
+                <path d="M3 4h10v8H3z"/>
+            </svg>`,
+            'export': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 10l3-3h-2V1H7v6H5l3 3z"/>
+                <path d="M13 9v5H3V9H2v6h12V9h-1z"/>
+            </svg>`,
+            'info': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1C4.1 1 1 4.1 1 8s3.1 7 7 7 7-3.1 7-7-3.1-7-7-7zm0 13c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/>
+                <path d="M9 12H7v-5h2v5zM8 4.5c-0.6 0-1 0.4-1 1s0.4 1 1 1 1-0.4 1-1-0.4-1-1-1z"/>
+            </svg>`
+        };
+        
+        return icons[iconName] || '';
+    }
+
+    /**
+     * 生成参数说明HTML
+     * @param {string} label - 参数标签
+     * @param {string} value - 参数值
+     * @param {string} description - 参数描述
+     * @param {string} icon - 图标名称
+     * @returns {string} 参数HTML
+     */
+    createParameterItem(label, value, description, icon) {
+        return `
+            <div class="parameter-item">
+                <div class="parameter-header">
+                    <span class="parameter-icon">${this.getIcon(icon)}</span>
+                    <span class="parameter-label">${label}</span>
+                    <span class="parameter-info" title="${description}">${this.getIcon('info')}</span>
+                </div>
+                <div class="parameter-value">${value}</div>
+            </div>
+        `;
+    }
+
+    /**
      * 生成预览 HTML
+     * @param {Object} ddsInfo - DDS文件信息
+     * @param {string} filePath - 文件路径
+     * @param {vscode.Webview} webview - Webview实例
+     * @param {Buffer} fileBuffer - 文件缓冲区
+     * @returns {string} 预览HTML
      */
     getPreviewHTML(ddsInfo, filePath, webview, fileBuffer) {
         const base64Data = fileBuffer.toString('base64');
@@ -249,53 +347,126 @@ class DDSViewerProvider {
         
         const style = `
             <style>
+                :root {
+                    --border-radius: 6px;
+                    --spacing-sm: 8px;
+                    --spacing-md: 12px;
+                    --spacing-lg: 16px;
+                    --spacing-xl: 24px;
+                }
+                
                 body { 
                     font-family: var(--vscode-font-family); 
                     background: var(--vscode-editor-background);
                     color: var(--vscode-editor-foreground);
-                    padding: 20px;
+                    padding: 0;
                     margin: 0;
+                    line-height: 1.5;
                 }
-                .container { max-width: 900px; margin: 0 auto; }
+                
+                .container { 
+                    max-width: 1000px; 
+                    margin: 0 auto; 
+                    padding: var(--spacing-lg);
+                }
+                
                 .header { 
-                    background: var(--vscode-panel-border);
-                    padding: 15px; 
-                    border-radius: 5px;
-                    margin-bottom: 20px;
+                    background: var(--vscode-panel-background);
+                    padding: var(--spacing-lg); 
+                    border-radius: var(--border-radius);
+                    margin-bottom: var(--spacing-xl);
+                    border-left: 4px solid var(--vscode-textLink-foreground);
                 }
-                .info-grid { 
+                
+                .header h2 {
+                    margin: 0 0 var(--spacing-sm) 0;
+                    display: flex;
+                    align-items: center;
+                    gap: var(--spacing-sm);
+                }
+                
+                .header-icon {
+                    color: var(--vscode-textLink-foreground);
+                }
+                
+                .parameter-grid { 
                     display: grid; 
-                    grid-template-columns: 1fr 1fr;
-                    gap: 10px;
-                    margin-bottom: 20px;
+                    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                    gap: var(--spacing-md);
+                    margin-bottom: var(--spacing-xl);
                 }
-                .info-item { 
+                
+                .parameter-item { 
                     background: var(--vscode-input-background);
-                    padding: 10px;
-                    border-radius: 3px;
+                    padding: var(--spacing-md);
+                    border-radius: var(--border-radius);
+                    border: 1px solid var(--vscode-panel-border);
+                    transition: all 0.2s ease;
                 }
-                .label { font-weight: bold; color: var(--vscode-textLink-foreground); }
+                
+                .parameter-item:hover {
+                    border-color: var(--vscode-focusBorder);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                }
+                
+                .parameter-header {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: var(--spacing-sm);
+                    gap: var(--spacing-sm);
+                }
+                
+                .parameter-icon {
+                    color: var(--vscode-textLink-foreground);
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .parameter-label { 
+                    font-weight: 600; 
+                    font-size: 0.9em;
+                    color: var(--vscode-descriptionForeground);
+                }
+                
+                .parameter-info {
+                    color: var(--vscode-descriptionForeground);
+                    opacity: 0.6;
+                    cursor: help;
+                    margin-left: auto;
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .parameter-value {
+                    font-size: 1.1em;
+                    font-weight: 500;
+                    word-break: break-word;
+                }
+                
                 .warning { 
                     background: var(--vscode-inputValidation-warningBackground);
                     border: 1px solid var(--vscode-inputValidation-warningBorder);
-                    padding: 15px;
-                    border-radius: 5px;
-                    margin: 20px 0;
+                    padding: var(--spacing-lg);
+                    border-radius: var(--border-radius);
+                    margin: var(--spacing-xl) 0;
                 }
+                
                 .success { 
                     background: var(--vscode-inputValidation-infoBackground);
                     border: 1px solid var(--vscode-inputValidation-infoBorder);
-                    padding: 15px;
-                    border-radius: 5px;
-                    margin: 20px 0;
+                    padding: var(--spacing-lg);
+                    border-radius: var(--border-radius);
+                    margin: var(--spacing-xl) 0;
                 }
+                
                 .preview-container {
-                    text-align: center;
-                    margin: 20px 0;
+                    margin: var(--spacing-xl) 0;
                     position: relative;
                 }
+                
                 .preview-wrapper {
-                    display: inline-block;
+                    display: flex;
+                    justify-content: center;
                     position: relative;
                     border: 1px solid var(--vscode-panel-border);
                     background: 
@@ -305,76 +476,183 @@ class DDSViewerProvider {
                         linear-gradient(-45deg, transparent 75%, #888 75%);
                     background-size: 20px 20px;
                     background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-                    width: 512px;
-                    height: 512px;
+                    min-height: 400px;
+                    max-height: 600px;
                     overflow: hidden;
+                    border-radius: var(--border-radius);
                 }
+                
                 #preview-image {
                     max-width: 100%;
                     max-height: 100%;
                     transition: transform 0.1s ease;
                     cursor: grab;
+                    object-fit: contain;
                 }
+                
                 #preview-image:active {
                     cursor: grabbing;
                 }
+                
                 .controls {
                     display: flex;
                     justify-content: center;
-                    gap: 10px;
-                    margin: 15px 0;
+                    align-items: center;
+                    gap: var(--spacing-md);
+                    margin: var(--spacing-lg) 0;
                     flex-wrap: wrap;
                 }
+                
+                .control-group {
+                    display: flex;
+                    gap: var(--spacing-sm);
+                    align-items: center;
+                }
+                
                 .control-btn {
                     background: var(--vscode-button-background);
                     color: var(--vscode-button-foreground);
                     border: none;
-                    padding: 8px 16px;
-                    border-radius: 3px;
+                    padding: var(--spacing-sm) var(--spacing-md);
+                    border-radius: var(--border-radius);
                     cursor: pointer;
-                    font-size: 12px;
+                    font-size: 0.9em;
+                    display: flex;
+                    align-items: center;
+                    gap: var(--spacing-sm);
+                    transition: background 0.2s ease;
                 }
+                
                 .control-btn:hover {
                     background: var(--vscode-button-hoverBackground);
                 }
+                
                 .control-btn:disabled {
                     background: var(--vscode-button-secondaryBackground);
                     color: var(--vscode-button-secondaryForeground);
                     cursor: not-allowed;
                 }
+                
                 .zoom-info {
-                    display: inline-block;
-                    padding: 8px 16px;
+                    display: inline-flex;
+                    align-items: center;
+                    padding: var(--spacing-sm) var(--spacing-md);
                     background: var(--vscode-input-background);
-                    border-radius: 3px;
+                    border-radius: var(--border-radius);
                     min-width: 80px;
-                    text-align: center;
+                    justify-content: center;
+                    font-size: 0.9em;
+                    border: 1px solid var(--vscode-input-border);
                 }
+                
                 .loading {
-                    padding: 20px;
+                    padding: var(--spacing-xl);
                     text-align: center;
                     color: var(--vscode-descriptionForeground);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100%;
                 }
+                
+                .loading-spinner {
+                    width: 40px;
+                    height: 40px;
+                    border: 4px solid var(--vscode-panel-border);
+                    border-top: 4px solid var(--vscode-textLink-foreground);
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin-bottom: var(--spacing-md);
+                }
+                
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                
                 .export-section {
-                    margin: 20px 0;
-                    padding: 15px;
+                    margin: var(--spacing-xl) 0;
+                    padding: var(--spacing-lg);
                     background: var(--vscode-input-background);
-                    border-radius: 5px;
+                    border-radius: var(--border-radius);
+                    border: 1px solid var(--vscode-panel-border);
                 }
+                
                 .export-status {
-                    margin-top: 10px;
-                    padding: 10px;
-                    border-radius: 3px;
+                    margin-top: var(--spacing-md);
+                    padding: var(--spacing-md);
+                    border-radius: var(--border-radius);
+                    display: none;
                 }
+                
                 .export-success {
                     background: var(--vscode-inputValidation-infoBackground);
                     border: 1px solid var(--vscode-inputValidation-infoBorder);
                     color: var(--vscode-inputValidation-infoForeground);
                 }
+                
                 .export-error {
                     background: var(--vscode-inputValidation-errorBackground);
                     border: 1px solid var(--vscode-inputValidation-errorBorder);
                     color: var(--vscode-inputValidation-errorForeground);
+                }
+                
+                .details-section {
+                    margin-top: var(--spacing-xl);
+                }
+                
+                details {
+                    background: var(--vscode-input-background);
+                    border-radius: var(--border-radius);
+                    border: 1px solid var(--vscode-panel-border);
+                    overflow: hidden;
+                }
+                
+                summary {
+                    padding: var(--spacing-md) var(--spacing-lg);
+                    cursor: pointer;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: var(--spacing-sm);
+                }
+                
+                details[open] summary {
+                    border-bottom: 1px solid var(--vscode-panel-border);
+                }
+                
+                .details-content {
+                    padding: var(--spacing-lg);
+                }
+                
+                pre {
+                    background: var(--vscode-textCodeBlock-background);
+                    padding: var(--spacing-md);
+                    border-radius: var(--border-radius);
+                    overflow: auto;
+                    max-height: 400px;
+                    font-size: 0.85em;
+                    margin: 0;
+                }
+                
+                @media (max-width: 768px) {
+                    .container {
+                        padding: var(--spacing-md);
+                    }
+                    
+                    .parameter-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .controls {
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+                    
+                    .control-group {
+                        justify-content: center;
+                    }
                 }
             </style>
         `;
@@ -468,8 +746,8 @@ class DDSViewerProvider {
                     const imgWidth = img.naturalWidth;
                     const imgHeight = img.naturalHeight;
                     
-                    const scaleX = 512 / imgWidth;
-                    const scaleY = 512 / imgHeight;
+                    const scaleX = wrapper.clientWidth / imgWidth;
+                    const scaleY = wrapper.clientHeight / imgHeight;
                     currentScale = Math.min(scaleX, scaleY, 1.0);
                     translateX = 0;
                     translateY = 0;
@@ -648,68 +926,116 @@ class DDSViewerProvider {
                 this.getFourCCDescription(ddsInfo.pixelFormat.fourCC.trim()) : 
                 'RGB Format';
 
+            // 创建参数网格
+            const parameterGrid = `
+                <div class="parameter-grid">
+                    ${this.createParameterItem(
+                        'Dimensions', 
+                        `${ddsInfo.header.width} × ${ddsInfo.header.height}`, 
+                        '图像的宽度和高度（以像素为单位）',
+                        'dimensions'
+                    )}
+                    ${this.createParameterItem(
+                        'Format', 
+                        formatInfo, 
+                        'DDS文件的压缩格式或像素格式',
+                        'format'
+                    )}
+                    ${this.createParameterItem(
+                        'Mipmaps', 
+                        ddsInfo.header.mipMapCount || 1, 
+                        'Mipmap级别数量（用于LOD的预计算缩小版本）',
+                        'mipmap'
+                    )}
+                    ${this.createParameterItem(
+                        'File Size', 
+                        `${(ddsInfo.fileSize / 1024).toFixed(2)} KB`, 
+                        'DDS文件的磁盘大小',
+                        'size'
+                    )}
+                    ${this.createParameterItem(
+                        'FourCC', 
+                        ddsInfo.pixelFormat.fourCC || 'N/A', 
+                        'FourCC代码（四字符代码），标识压缩格式',
+                        'code'
+                    )}
+                    ${this.createParameterItem(
+                        'Depth', 
+                        ddsInfo.header.depth || 1, 
+                        '体积纹理的深度（对于2D纹理通常为1）',
+                        'depth'
+                    )}
+                </div>
+            `;
+
             content = `
-                <div class="header">
-                    <h2>🎨 DDS File Preview</h2>
-                    <p><strong>File:</strong> ${path.basename(filePath)}</p>
-                    <p id="format-info"><strong>Format:</strong> ${formatType}</p>
-                </div>
-
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="label">Dimensions:</span> ${ddsInfo.header.width} × ${ddsInfo.header.height}
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Format:</span> ${formatInfo}
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Mipmaps:</span> ${ddsInfo.header.mipMapCount || 1}
-                    </div>
-                    <div class="info-item">
-                        <span class="label">File Size:</span> ${(ddsInfo.fileSize / 1024).toFixed(2)} KB
-                    </div>
-                    <div class="info-item">
-                        <span class="label">FourCC:</span> ${ddsInfo.pixelFormat.fourCC || 'N/A'}
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Depth:</span> ${ddsInfo.header.depth || 1}
-                    </div>
-                </div>
-
                 <div class="preview-container">
+
                     <div class="controls">
-                        <button class="control-btn" onclick="zoomOut()">缩小</button>
-                        <button class="control-btn" onclick="resetView()">重置</button>
-                        <span class="zoom-info" id="zoom-level">100%</span>
-                        <button class="control-btn" onclick="zoomIn()">放大</button>
-                        <button class="control-btn" onclick="fitToView()">适应视图</button>
+                        <div class="control-group">
+                            <button class="control-btn" onclick="zoomOut()">
+                                ${this.getIcon('zoom-out')}
+                                缩小
+                            </button>
+                            <button class="control-btn" onclick="resetView()">
+                                ${this.getIcon('reset')}
+                                重置
+                            </button>
+                            <span class="zoom-info" id="zoom-level">100%</span>
+                            <button class="control-btn" onclick="zoomIn()">
+                                ${this.getIcon('zoom-in')}
+                                放大
+                            </button>
+                            <button class="control-btn" onclick="fitToView()">
+                                ${this.getIcon('fit')}
+                                适应视图
+                            </button>
+                        </div>
+                        <button class="control-btn" onclick="exportAsPNG()">
+                            ${this.getIcon('export')}
+                            导出为 PNG
+                        </button>
                     </div>
-                    
+
                     <div class="preview-wrapper">
                         <div id="loading" class="loading">
-                            <h3>🖼️ 正在解码 DDS 纹理...</h3>
+                            <div class="loading-spinner"></div>
+                            <h3>正在解码 DDS 纹理...</h3>
                             <p>格式: ${formatType} | 尺寸: ${ddsInfo.header.width} × ${ddsInfo.header.height}</p>
                         </div>
                         <img id="preview-image" style="display: none;">
                     </div>
+
                 </div>
+
+                <div class="header">
+                    <h2>
+                        <span class="header-icon">${this.getIcon('image')}</span>
+                        DDS File Preview
+                    </h2>
+                    <p><strong>File:</strong> ${path.basename(filePath)}</p>
+                    <p id="format-info"><strong>Format:</strong> ${formatType}</p>
+                </div>
+
+                ${parameterGrid}
 
                 <div class="export-section">
-                    <h3>📤 导出选项</h3>
-                    <p>将 DDS 纹理导出为 PNG 格式：</p>
-                    <button class="control-btn" onclick="exportAsPNG()">导出为 PNG</button>
-                    <div id="export-message" class="export-status" style="display: none;"></div>
-                    <p style="font-size: 12px; color: var(--vscode-descriptionForeground); margin-top: 8px;">
-                        点击导出后，系统会弹出保存对话框让您选择保存位置
-                    </p>
+                    <h3>导出选项</h3>
+                    <p>将当前DDS纹理导出为PNG格式，保留原始尺寸和质量。</p>
+                    <div id="export-message" class="export-status"></div>
                 </div>
 
-                <details>
-                    <summary>Raw Header Information</summary>
-                    <pre style="background: var(--vscode-input-background); padding: 10px; border-radius: 3px; overflow: auto;">
-${JSON.stringify(ddsInfo, null, 2)}
-                    </pre>
-                </details>
+                <div class="details-section">
+                    <details>
+                        <summary>
+                            ${this.getIcon('code')}
+                            原始头信息
+                        </summary>
+                        <div class="details-content">
+                            <pre>${JSON.stringify(ddsInfo, null, 2)}</pre>
+                        </div>
+                    </details>
+                </div>
             `;
         }
 
@@ -733,7 +1059,8 @@ ${JSON.stringify(ddsInfo, null, 2)}
 }
 
 /**
- * @param {vscode.ExtensionContext} context
+ * 激活扩展
+ * @param {vscode.ExtensionContext} context - VSCode扩展上下文
  */
 function activate(context) {
     console.log('DDS Viewer extension is now active!');

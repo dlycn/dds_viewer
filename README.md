@@ -1,65 +1,90 @@
-# dds-viewer README
+# DDS Viewer - VSCode扩展
 
-This is the README for your extension "dds-viewer". After writing up a brief description, we recommend including the following sections.
+![DDS Viewer Logo](https://via.placeholder.com/128x128?text=DDS)
 
-## Features
+一个专业的VSCode扩展，用于预览和导出DDS（DirectDraw Surface）图像文件。支持多种DDS格式，提供直观的UI界面和丰富的图像操作功能。
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## ✨ 主要特性
 
-For example if there is an image subfolder under your extension project workspace:
+### 🖼️ 图像预览
+- **实时预览**：直接在VSCode中查看DDS纹理
+- **多格式支持**：支持DXT1、DXT3、DXT5、BC4、BC5等压缩格式
+- **高质量渲染**：保持原始图像质量进行预览
 
-\!\[feature X\]\(images/feature-x.png\)
+### 🔍 交互操作
+- **缩放控制**：支持放大、缩小、重置和适应视图
+- **拖拽查看**：鼠标拖拽查看大尺寸纹理
+- **实时信息**：显示详细的DDS文件头信息
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### 📤 导出功能
+- **PNG导出**：将DDS纹理导出为PNG格式
+- **批量处理**：支持多个DDS文件的预览和导出
+- **保持质量**：导出时保持原始分辨率和质量
 
-## Requirements
+### 📊 详细分析
+- **格式检测**：自动识别DDS压缩格式
+- **头信息解析**：显示完整的DDS文件头数据
+- **技术参数**：展示尺寸、Mipmap、FourCC等关键信息
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## 🚀 快速开始
 
-## Extension Settings
+### 安装扩展
+1. 在VSCode扩展商店中搜索"DDS Viewer"
+2. 点击安装按钮
+3. 重启VSCode
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### 使用方法
+1. **方法一**：在VSCode中直接打开.dds文件
+2. **方法二**：使用命令面板（Ctrl+Shift+P）输入"DDS Viewer: Preview DDS File"
+3. **方法三**：在资源管理器中右键点击.dds文件，选择"Open With" → "DDS Preview"
 
-For example:
+## 🎯 界面概览
 
-This extension contributes the following settings:
+### 主界面布局
+┌────────────────────────────────────────────────────────┐
+│ 🎨 DDS File Preview - texture.dds │
+│ ┌─────────────────┐ ┌─────────────────┐ │
+│ │ 控制工具栏 │ │ 导出按钮 │ │
+│ └─────────────────┘ └─────────────────┘ │
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ 图像预览区域 │ │
+│ │ █████████████████████████████████████████████ │ │
+│ │ █████████████████████████████████████████████ │ │
+│ │ █████████████████████████████████████████████ │ │
+│ └─────────────────────────────────────────────────┘ │
+│ ┌─────────────────┐ ┌─────────────────┐ │
+│ │ 技术参数 │ │ 文件信息 │ │
+│ └─────────────────┘ └─────────────────┘ │
+└────────────────────────────────────────────────────────┘
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+text
 
-## Known Issues
+### 控制功能
+- **🔍 缩放控制**：放大/缩小/重置/适应视图
+- **🖱️ 拖拽导航**：支持鼠标拖拽查看大图像
+- **📤 导出选项**：一键导出为PNG格式
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+## 📋 支持格式
 
-## Release Notes
+| 格式 | 描述 | 状态 |
+|------|------|------|
+| DXT1 | BC1压缩格式 | ✅ 完全支持 |
+| DXT3 | BC2压缩格式 | ✅ 完全支持 |
+| DXT5 | BC3压缩格式 | ✅ 完全支持 |
+| BC4 | ATI1压缩格式 | ✅ 完全支持 |
+| BC5 | ATI2压缩格式 | ✅ 完全支持 |
+| BGRA | 未压缩32位 | ✅ 完全支持 |
+| BGR | 未压缩24位 | ✅ 完全支持 |
+| DX10 | 扩展头格式 | 🔄 部分支持 |
 
-Users appreciate release notes as you update your extension.
+## 🛠️ 技术架构
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+### 核心组件
+```mermaid
+graph TB
+    A[DDS文件] --> B[文件头解析]
+    B --> C[格式检测]
+    C --> D[数据解码]
+    D --> E[WebView渲染]
+    E --> F[用户交互]
+    F --> G[导出处理]
