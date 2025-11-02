@@ -13,7 +13,7 @@
   "activationEvents": [
   ],
   "main": "./extension.js",
-  "icon": "https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/blobs/53ee76b835e5aee9f6e1db04cd266850341b8231/icon.png",
+  "icon": "./icon.png",
   "contributes": {
     "customEditors": [
       {
