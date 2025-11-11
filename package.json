@@ -2,7 +2,8 @@
   "name": "dds-viewer",
   "displayName": "DDS Viewer",
   "description": "A VSCode extension for previewing DDS image files",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.105.0"
   },
@@ -11,6 +12,7 @@
     "Other"
   ],
   "activationEvents": [
+    "onCustomEditor:dds-viewer.preview"
   ],
   "main": "./extension.js",
   "icon": "./icon.png",
@@ -44,7 +46,9 @@
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "package": "vsce package",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/vscode": "^1.105.0",
@@ -54,7 +58,7 @@
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2"
   },
-"repository": {
+  "repository": {
     "type": "git",
     "url": "https://gitcode.com/StarsAll_InFrost/dds-viewer.git"
   }

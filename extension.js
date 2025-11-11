@@ -221,7 +221,7 @@ class DDSViewerProvider {
             'BC5S': 'BC5 Signed',
             'DX10': 'DX10 Extended Header'
         };
-        return formats[fourCC] || `mystical:rgba ${fourCC}`;
+        return formats[fourCC] || `Uncompressed`;
     }
 
     /**
@@ -674,8 +674,10 @@ class DDSViewerProvider {
                         
                         if (format === 'BGRA' || format === 'BGR') {
                             return this.decodeUncompressed(view, width, height, dataOffset, format);
+                        } else if (format === 'DXT1') {
+                            return this.decodeDXT1(view, width, height, dataOffset);
                         } else {
-                            throw new Error('Unsupported format: ' + format + '. Only RGB/BGRA formats are currently supported.');
+                            throw new Error('Unsupported format: ' + format + '. Supported formats: RGB, BGRA, DXT1.');
                         }
                     }
                     
@@ -710,6 +712,83 @@ class DDSViewerProvider {
                             data: pixelData,
                             format: 'RGBA'
                         };
+                    }
+                    
+                    static decodeDXT1(view, width, height, dataOffset) {
+                        // DXT1 块压缩格式：每个 4x4 像素块占用 8 字节
+                        const blockWidth = Math.ceil(width / 4);
+                        const blockHeight = Math.ceil(height / 4);
+                        const pixelData = new Uint8ClampedArray(width * height * 4);
+                        
+                        for (let blockY = 0; blockY < blockHeight; blockY++) {
+                            for (let blockX = 0; blockX < blockWidth; blockX++) {
+                                const blockOffset = dataOffset + (blockY * blockWidth + blockX) * 8;
+                                
+                                if (blockOffset + 8 > view.byteLength) {
+                                    continue; // 跳过不完整的块
+                                }
+                                
+                                // 读取颜色值
+                                const color0 = view.getUint16(blockOffset, true);
+                                const color1 = view.getUint16(blockOffset + 2, true);
+                                const codes = view.getUint32(blockOffset + 4, true);
+                                
+                                // 将 RGB565 转换为 RGB888
+                                const colors = [
+                                    this.rgb565ToRgb888(color0),
+                                    this.rgb565ToRgb888(color1),
+                                    color0 > color1 ? 
+                                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 1/3) :
+                                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 1/2),
+                                    color0 > color1 ? 
+                                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 2/3) :
+                                        [0, 0, 0, 0] // 透明黑色
+                                ];
+                                
+                                // 解码 4x4 像素块
+                                for (let pixelY = 0; pixelY < 4; pixelY++) {
+                                    for (let pixelX = 0; pixelX < 4; pixelX++) {
+                                        const x = blockX * 4 + pixelX;
+                                        const y = blockY * 4 + pixelY;
+                                        
+                                        if (x >= width || y >= height) {
+                                            continue; // 跳过超出边界的像素
+                                        }
+                                        
+                                        const codeIndex = (pixelY * 4 + pixelX);
+                                        const code = (codes >> (codeIndex * 2)) & 0x03;
+                                        const color = colors[code];
+                                        
+                                        const pixelIndex = (y * width + x) * 4;
+                                        pixelData[pixelIndex] = color[0];     // R
+                                        pixelData[pixelIndex + 1] = color[1]; // G
+                                        pixelData[pixelIndex + 2] = color[2]; // B
+                                        pixelData[pixelIndex + 3] = color[3]; // A
+                                    }
+                                }
+                            }
+                        }
+                        
+                        return {
+                            width,
+                            height,
+                            data: pixelData,
+                            format: 'RGBA'
+                        };
+                    }
+                    
+                    static rgb565ToRgb888(color565) {
+                        const r = ((color565 >> 11) & 0x1F) * 255 / 31;
+                        const g = ((color565 >> 5) & 0x3F) * 255 / 63;
+                        const b = (color565 & 0x1F) * 255 / 31;
+                        return [r, g, b, 255]; // 完全不透明
+                    }
+                    
+                    static interpolateColor(color1, color2, factor) {
+                        const r = Math.round(color1[0] * (1 - factor) + color2[0] * factor);
+                        const g = Math.round(color1[1] * (1 - factor) + color2[1] * factor);
+                        const b = Math.round(color1[2] * (1 - factor) + color2[2] * factor);
+                        return [r, g, b, 255]; // 完全不透明
                     }
                 }
                 
@@ -902,8 +981,8 @@ class DDSViewerProvider {
                         console.error('DDS decoding failed:', error);
                         loadingElement.innerHTML = 
                             '<div class="warning">解码失败: ' + error.message + '</div>' +
-                            '<p>当前仅支持未压缩的 RGB/BGRA 格式 DDS 文件。</p>';
-                        formatInfo.innerHTML = '<span style="color: var(--vscode-errorForeground)">✗ 不支持的格式: ${formatType}</span>';
+                            '<p>当前支持格式: RGB, BGRA, DXT1。</p>';
+                        formatInfo.innerHTML = '<span style="color: var(--vscode-errorForeground)">✗ 解码失败: ' + error.message + '</span>';
                     }
                 }
                 
