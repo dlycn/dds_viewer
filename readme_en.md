@@ -7,10 +7,11 @@ A DDS image preview tool designed for mod developers, enabling rapid texture ins
 
 <p align="center">
   <img src="https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/raw/main/icon.png" alt="DDS Viewer Logo">
+</p>
+<div align="center">
   <a href="README.md">中文</a> | 
   <a href="readme_en.md">English</a>
-</p>
-
+</div>
 ## 📋 Prerequisites
 
 > **Note**: This tool is optimized for **small to medium mod development workflows**, focusing on real-time preview capabilities.  
