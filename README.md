@@ -3,7 +3,7 @@
 一个为Mod开发者设计的DDS图像预览工具，帮助您快速查看和评估纹理尺寸，为选择合适的图形格式提供参考。
 
 <p align="center">
-  <img src="https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/raw/main/icon.png" alt="DDS Viewer Logo">
+  <img src="icon.png" alt="DDS Viewer Logo">
 </p>
 <div align="center">
   <a href="README.md">中文</a> | 
@@ -15,6 +15,17 @@
 > **致歉与说明**：本工具主要面向**中小型Mod开发场景**，旨在提供便捷的实时预览功能。
 > - 对于小型Mod或快速原型，建议使用PNG格式（体积小、兼容性好）
 > - 对于大型Mod或需要批量处理的情况，请使用专业的批量转换工具（本扩展专注于单文件预览）
+
+## ⚙️ 运行示例
+
+<div align="center">
+  <img src="shows/1.png" alt="DDS Viewer 示例1" width="45%">
+  <img src="shows/2.png" alt="DDS Viewer 示例2" width="45%">
+  <br>
+  <img src="shows/3.png" alt="DDS Viewer 示例3" width="45%">
+  <img src="shows/4.png" alt="DDS Viewer 示例4" width="45%">
+</div>
+
 
 ## ✨ 核心价值
 

@@ -6,17 +6,28 @@
 A DDS image preview tool designed for mod developers, enabling rapid texture inspection and format evaluation to support informed graphics format selection.
 
 <p align="center">
-  <img src="https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/raw/main/icon.png" alt="DDS Viewer Logo">
+  <img src="icon.png" alt="DDS Viewer Logo">
 </p>
 <div align="center">
   <a href="README.md">中文</a> | 
   <a href="readme_en.md">English</a>
 </div>
+
 ## 📋 Prerequisites
 
 > **Note**: This tool is optimized for **small to medium mod development workflows**, focusing on real-time preview capabilities.  
 > - For small mods or prototyping, PNG is recommended for its balance of size and compatibility.
 > - For large-scale mods or batch processing, please use dedicated batch conversion tools.
+
+## ⚙️ Getting Started
+
+<div align="center">
+  <img src="shows/1.png" alt="DDS Viewer 示例1" width="45%">
+  <img src="shows/2.png" alt="DDS Viewer 示例2" width="45%">
+  <br>
+  <img src="shows/3.png" alt="DDS Viewer 示例3" width="45%">
+  <img src="shows/4.png" alt="DDS Viewer 示例4" width="45%">
+</div>
 
 ## ✨ Core Features
 
