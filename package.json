@@ -11,9 +11,6 @@
     "Visualization",
     "Other"
   ],
-  "activationEvents": [
-    "onCustomEditor:dds-viewer.preview"
-  ],
   "main": "./extension.js",
   "icon": "./icon.png",
   "contributes": {
