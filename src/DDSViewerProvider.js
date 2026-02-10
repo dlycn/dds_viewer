@@ -48,20 +48,22 @@ class DDSViewerProvider {
             }
         );
         
+        // 设置 Webview 内容
+        webviewPanel.webview.options = {
+            enableScripts: true,
+            localResourceRoots: []
+        };
+        
         try {
             // 读取 DDS 文件
             const buffer = fs.readFileSync(filePath);
             const ddsInfo = DDSFormatDetector.parseDDSHeader(buffer);
             const formatType = DDSFormatDetector.detectFormat(ddsInfo.pixelFormat);
             
-            // 设置 Webview 内容
-            webviewPanel.webview.options = {
-                enableScripts: true,
-                localResourceRoots: []
-            };
-            
             // 传递文件 buffer 用于解码
             const base64Data = buffer.toString('base64');
+            
+            // 使用 HTMLGenerator 生成预览界面
             webviewPanel.webview.html = HTMLGenerator.generatePreviewHTML(
                 ddsInfo, 
                 filePath, 
@@ -70,17 +72,25 @@ class DDSViewerProvider {
             );
             
         } catch (error) {
-            webviewPanel.webview.html = `
-                <!DOCTYPE html>
-                <html>
-                <body>
-                    <div style="padding: 20px; color: var(--vscode-errorForeground);">
-                        <h3>❌ Error reading DDS file</h3>
-                        <p>${error.message}</p>
-                    </div>
-                </body>
-                </html>
-            `;
+            // 文件读取失败时，创建包含错误的ddsInfo对象
+            const ddsInfo = {
+                error: `Error reading DDS file: ${error.message}`,
+                valid: false,
+                header: {
+                    width: 0,
+                    height: 0
+                },
+                pixelFormat: {},
+                fileSize: 0
+            };
+            
+            // 生成预览界面，错误信息将在预览界面内部显示
+            webviewPanel.webview.html = HTMLGenerator.generatePreviewHTML(
+                ddsInfo, 
+                filePath, 
+                '',  // 空base64数据
+                'UNKNOWN'
+            );
         }
     }
 

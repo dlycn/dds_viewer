@@ -42,29 +42,7 @@
         ],
         "priority": "default"
       }
-    ],
-    "commands": [
-      {
-        "command": "ddsViewer.exportAsPNG",
-        "title": "Export DDS as PNG",
-        "category": "DDS Viewer"
-      }
-    ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "ddsViewer.exportAsPNG",
-          "when": "editorLangId == dds"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "ddsViewer.exportAsPNG",
-          "when": "resourceExtname == .dds",
-          "group": "navigation"
-        }
-      ]
-    }
+    ]
   },
   "activationEvents": [
     "onCustomEditor:ddsViewer.ddsViewer",

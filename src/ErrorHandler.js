@@ -7,7 +7,7 @@ class ErrorHandler {
             <div class="error-container">
                 <h3>❌ DDS Decoding Failed</h3>
                 <p><strong>Error:</strong> ${error.message}</p>
-                <p><strong>Supported formats:</strong> BGRA, BGR, DXT1, DXT5</p>
+                <p><strong>Supported formats:</strong> BGRA, BGR, DXT1,DXT3, DXT5</p>
             </div>
         `;
         

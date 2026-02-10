@@ -2,6 +2,7 @@
 const path = require('path');
 const Icons = require('./icons');
 const DDSFormatDetector = require('./DDSFormatDetector');
+const fs = require('fs');
 
 /**
  * HTML生成器
@@ -17,7 +18,7 @@ class HTMLGenerator {
      */
     static generatePreviewHTML(ddsInfo, filePath, base64Data, formatType) {
         const fileName = path.basename(filePath, '.dds');
-        
+
         const style = this.generateStyle();
         const content = this.generateContent(ddsInfo, filePath, formatType);
         const decoderScript = this.generateDecoderScript(ddsInfo, base64Data, formatType);
@@ -358,6 +359,86 @@ class HTMLGenerator {
         `;
     }
 
+
+
+
+
+
+    /**
+     * 解析错误详细信息
+     * @param {string} errorMessage - 原始错误信息
+     * @param {string} filePath - 文件路径
+     * @returns {Object} 解析后的错误信息
+     */
+    static parseErrorDetails(errorMessage, filePath) {
+        const details = {
+            message: errorMessage,
+            fileSize: null,
+            sizeStatus: null,
+            possibleCauses: []
+        };
+
+        // 尝试从错误信息中提取详细信息
+        const errorLower = errorMessage.toLowerCase();
+
+        // 检测文件大小相关的错误
+        if (errorLower.includes('file too small') ||
+            errorLower.includes('cannot read') ||
+            errorLower.includes('undefined')) {
+
+            details.possibleCauses.push('文件大小不足 128 字节（最小 DDS 头部大小）');
+            details.possibleCauses.push('文件可能已损坏或不完整');
+            details.possibleCauses.push('文件可能不是有效的 DDS 格式');
+        }
+
+        // 检测格式错误
+        if (errorLower.includes('magic number') || errorLower.includes('not a valid')) {
+            details.possibleCauses.push('文件头部缺少有效的 DDS 标识符');
+            details.possibleCauses.push('文件可能被其他程序损坏');
+            details.possibleCauses.push('文件扩展名可能不正确');
+        }
+
+        // 检测读取错误
+        if (errorLower.includes('failed to read') || errorLower.includes('error reading')) {
+            details.possibleCauses.push('文件访问权限问题');
+            details.possibleCauses.push('文件正在被其他程序使用');
+            details.possibleCauses.push('磁盘空间不足');
+        }
+
+        // 添加通用原因
+        if (details.possibleCauses.length === 0) {
+            details.possibleCauses.push('DDS 文件格式不兼容');
+            details.possibleCauses.push('文件结构损坏');
+            details.possibleCauses.push('不支持此版本的 DDS 文件');
+        }
+
+        // 尝试获取文件大小信息
+        try {
+            if (fs && fs.existsSync && fs.existsSync(filePath)) {
+                const stats = fs.statSync(filePath);
+                details.fileSize = `${stats.size} bytes`;
+
+                if (stats.size < 128) {
+                    details.sizeStatus = `❌ 不足 (缺少 ${128 - stats.size} 字节)`;
+                } else if (stats.size < 256) {
+                    details.sizeStatus = `⚠️ 可能不完整`;
+                } else {
+                    details.sizeStatus = `✅ 大小正常`;
+                }
+            }
+        } catch (e) {
+            // 忽略文件大小获取错误
+        }
+
+        return details;
+    }
+
+
+
+
+
+
+
     /**
      * 生成内容
      * @param {Object} ddsInfo - DDS文件信息
@@ -367,17 +448,413 @@ class HTMLGenerator {
      */
     static generateContent(ddsInfo, filePath, formatType) {
         if (ddsInfo.error) {
+            // 解析错误详细信息
+            const errorDetails = this.parseErrorDetails(ddsInfo.error, filePath);
+
             return `
-                <div class="warning">
-                    <h3>Unable to parse DDS file</h3>
-                    <p>${ddsInfo.error}</p>
+            <div class="dds-error-preview">
+                <div class="header">
+                    <h2>
+                        <span class="header-icon">${Icons.getIcon('image')}</span>
+                        DDS 文件预览 - 错误报告
+                    </h2>
+                    <div class="file-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">文件:</span>
+                            <span class="meta-value">${path.basename(filePath)}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">状态:</span>
+                            <span class="status-badge error">❌ 读取失败</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">格式:</span>
+                            <span class="meta-value">${formatType}</span>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="error-summary">
+                    <div class="error-header">
+                        <span class="error-icon">⚠️</span>
+                        <h3>错误摘要</h3>
+                    </div>
+                    <div class="error-message">
+                        <code>${ddsInfo.error}</code>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    ${errorDetails.fileSize ? `
+                    <div class="info-card">
+                        <div class="card-header">
+                            <span class="card-icon">📊</span>
+                            <h4>文件大小分析</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="info-row">
+                                <span class="info-label">文件大小:</span>
+                                <span class="info-value">${errorDetails.fileSize}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">最小要求:</span>
+                                <span class="info-value">128 bytes (DDS头部)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">状态:</span>
+                                <span class="status-badge ${errorDetails.sizeStatus.includes('不足') ? 'error' : 'warning'}">
+                                    ${errorDetails.sizeStatus}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <span class="card-icon">🔍</span>
+                            <h4>问题诊断</h4>
+                        </div>
+                        <div class="card-content">
+                            ${errorDetails.possibleCauses.length > 0 ? `
+                            <div class="section">
+                                <h5>可能的原因:</h5>
+                                <ul class="diagnosis-list">
+                                    ${errorDetails.possibleCauses.map(cause => `<li>${cause}</li>`).join('')}
+                                </ul>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="section">
+                                <h5>建议解决方案:</h5>
+                                <ol class="solution-list">
+                                    <li>确认文件是有效的 DDS 格式</li>
+                                    <li>检查文件是否损坏或不完整</li>
+                                    <li>使用其他 DDS 查看器验证文件</li>
+                                    <li>重新下载或重新生成文件</li>
+                                    <li>检查磁盘空间和读写权限</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                .dds-error-preview {
+                    background: var(--vscode-editor-background);
+                    border-radius: 8px;
+                    padding: 24px;
+                    margin: 16px 0;
+                    border: 1px solid var(--vscode-panel-border);
+                    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+                }
+
+                .header {
+                    margin-bottom: 24px;
+                    padding-bottom: 20px;
+                    border-bottom: 2px solid var(--vscode-panel-border);
+                }
+
+                .header h2 {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin: 0 0 16px 0;
+                    color: var(--vscode-foreground);
+                    font-size: 20px;
+                    font-weight: 600;
+                }
+
+                .header-icon {
+                    color: var(--vscode-errorForeground);
+                    display: flex;
+                    align-items: center;
+                    font-size: 24px;
+                }
+
+                .file-meta {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 16px;
+                    background: var(--vscode-sideBar-background);
+                    padding: 16px;
+                    border-radius: 6px;
+                    border: 1px solid var(--vscode-panel-border);
+                }
+
+                .meta-item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+
+                .meta-label {
+                    color: var(--vscode-descriptionForeground);
+                    font-size: 12px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .meta-value {
+                    color: var(--vscode-foreground);
+                    font-size: 14px;
+                    font-weight: 500;
+                    font-family: var(--vscode-editor-font-family, monospace);
+                }
+
+                .error-summary {
+                    background: linear-gradient(135deg, 
+                        var(--vscode-inputValidation-errorBackground) 0%, 
+                        rgba(255, 0, 0, 0.05) 100%);
+                    border: 1px solid var(--vscode-inputValidation-errorBorder);
+                    border-radius: 8px;
+                    padding: 20px;
+                    margin-bottom: 24px;
+                }
+
+                .error-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 16px;
+                }
+
+                .error-header h3 {
+                    margin: 0;
+                    color: var(--vscode-errorForeground);
+                    font-size: 16px;
+                    font-weight: 600;
+                }
+
+                .error-icon {
+                    font-size: 20px;
+                    color: var(--vscode-errorForeground);
+                }
+
+                .error-message {
+                    background: rgba(0, 0, 0, 0.2);
+                    border-radius: 6px;
+                    padding: 16px;
+                }
+
+                .error-message code {
+                    color: var(--vscode-errorForeground);
+                    font-family: var(--vscode-editor-font-family, monospace);
+                    font-size: 13px;
+                    line-height: 1.6;
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                }
+
+                .content-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 20px;
+                    margin-top: 24px;
+                }
+
+                .info-card {
+                    background: var(--vscode-sideBar-background);
+                    border: 1px solid var(--vscode-panel-border);
+                    border-radius: 8px;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                }
+
+                .info-card:hover {
+                    border-color: var(--vscode-focusBorder);
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+                }
+
+                .card-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 16px;
+                    background: var(--vscode-editor-background);
+                    border-bottom: 1px solid var(--vscode-panel-border);
+                }
+
+                .card-header h4 {
+                    margin: 0;
+                    color: var(--vscode-foreground);
+                    font-size: 15px;
+                    font-weight: 600;
+                }
+
+                .card-icon {
+                    font-size: 18px;
+                    color: var(--vscode-button-background);
+                }
+
+                .card-content {
+                    padding: 20px;
+                }
+
+                .info-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 0;
+                    border-bottom: 1px solid var(--vscode-panel-border);
+                }
+
+                .info-row:last-child {
+                    border-bottom: none;
+                }
+
+                .info-label {
+                    color: var(--vscode-descriptionForeground);
+                    font-size: 13px;
+                }
+
+                .info-value {
+                    color: var(--vscode-foreground);
+                    font-weight: 500;
+                    font-family: var(--vscode-editor-font-family, monospace);
+                    font-size: 13px;
+                }
+
+                .status-badge {
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.3px;
+                }
+
+                .status-badge.error {
+                    background: var(--vscode-errorForeground);
+                    color: white;
+                }
+
+                .status-badge.warning {
+                    background: var(--vscode-editorWarning-foreground);
+                    color: white;
+                }
+
+                .section {
+                    margin-bottom: 20px;
+                }
+
+                .section:last-child {
+                    margin-bottom: 0;
+                }
+
+                .section h5 {
+                    margin: 0 0 12px 0;
+                    color: var(--vscode-foreground);
+                    font-size: 14px;
+                    font-weight: 600;
+                }
+
+                .diagnosis-list,
+                .solution-list {
+                    margin: 0;
+                    padding: 0 0 0 20px;
+                }
+
+                .diagnosis-list li,
+                .solution-list li {
+                    margin-bottom: 8px;
+                    color: var(--vscode-foreground);
+                    line-height: 1.5;
+                    font-size: 13px;
+                }
+
+                .diagnosis-list li:last-child,
+                .solution-list li:last-child {
+                    margin-bottom: 0;
+                }
+
+                .diagnosis-list li {
+                    list-style-type: disc;
+                }
+
+                .solution-list {
+                    list-style-type: none;
+                    counter-reset: solution-counter;
+                    padding-left: 0;
+                }
+
+                .solution-list li {
+                    counter-increment: solution-counter;
+                    position: relative;
+                    padding-left: 32px;
+                    margin-bottom: 12px;
+                }
+
+                .solution-list li:before {
+                    content: counter(solution-counter);
+                    position: absolute;
+                    left: 0;
+                    top: -2px;
+                    background: var(--vscode-button-background);
+                    color: var(--vscode-button-foreground);
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+
+                .debug-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 12px;
+                }
+
+                .debug-item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                    padding: 12px;
+                    background: var(--vscode-editor-background);
+                    border-radius: 6px;
+                    border: 1px solid var(--vscode-panel-border);
+                }
+
+                .debug-label {
+                    color: var(--vscode-descriptionForeground);
+                    font-size: 11px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .debug-value {
+                    color: var(--vscode-foreground);
+                    font-family: var(--vscode-editor-font-family, monospace);
+                    font-size: 12px;
+                    word-break: break-word;
+                }
+
+                @media (max-width: 768px) {
+                    .content-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .file-meta {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .debug-grid {
+                        grid-template-columns: 1fr;
+                    }
+                }
+                </style>
+            </div>
             `;
         }
 
-        const formatInfo = ddsInfo.pixelFormat.fourCC.trim() ? 
-            DDSFormatDetector.getFourCCDescription(ddsInfo.pixelFormat.fourCC.trim()) : 
-            'RGB Format';
+        const formatInfo = DDSFormatDetector.getFourCCDescription(ddsInfo.pixelFormat);
+        const supportStatus = DDSFormatDetector.checkSupportStatus(ddsInfo.pixelFormat);
 
         const parameterGrid = this.generateParameterGrid(ddsInfo, formatInfo);
 
@@ -420,12 +897,6 @@ class HTMLGenerator {
             </div>
 
             ${parameterGrid}
-
-            <div class="export-section">
-                <h3>导出选项</h3>
-                <p>将当前DDS纹理导出为PNG格式，保留原始尺寸和质量。</p>
-                <div id="export-message" class="export-status"></div>
-            </div>
             <div class="header">
                 <h2>
                     <span class="header-icon">${Icons.getIcon('image')}</span>
@@ -471,41 +942,41 @@ class HTMLGenerator {
         return `
             <div class="parameter-grid">
                 ${createParameterItem(
-                    'Dimensions', 
-                    `${ddsInfo.header.width} × ${ddsInfo.header.height}`, 
-                    '图像的宽度和高度（以像素为单位）',
-                    'dimensions'
-                )}
+            'Dimensions',
+            `${ddsInfo.header.width} × ${ddsInfo.header.height}`,
+            '图像的宽度和高度（以像素为单位）',
+            'dimensions'
+        )}
                 ${createParameterItem(
-                    'Format', 
-                    formatInfo, 
-                    'DDS文件的压缩格式或像素格式',
-                    'format'
-                )}
+            'Format',
+            formatInfo,
+            'DDS文件的压缩格式或像素格式',
+            'format'
+        )}
                 ${createParameterItem(
-                    'Mipmaps', 
-                    ddsInfo.header.mipMapCount || 1, 
-                    'Mipmap级别数量（用于LOD的预计算缩小版本）',
-                    'mipmap'
-                )}
+            'Mipmaps',
+            ddsInfo.header.mipMapCount || 1,
+            'Mipmap级别数量（用于LOD的预计算缩小版本）',
+            'mipmap'
+        )}
                 ${createParameterItem(
-                    'File Size', 
-                    `${(ddsInfo.fileSize / 1024).toFixed(2)} KB`, 
-                    'DDS文件的磁盘大小',
-                    'size'
-                )}
+            'File Size',
+            `${(ddsInfo.fileSize / 1024).toFixed(2)} KB`,
+            'DDS文件的磁盘大小',
+            'size'
+        )}
                 ${createParameterItem(
-                    'FourCC', 
-                    ddsInfo.pixelFormat.fourCC || 'N/A', 
-                    'FourCC代码（四字符代码），标识压缩格式',
-                    'code'
-                )}
+            'FourCC',
+            ddsInfo.pixelFormat.fourCC || 'N/A',
+            'FourCC代码（四字符代码），标识压缩格式',
+            'code'
+        )}
                 ${createParameterItem(
-                    'Depth', 
-                    ddsInfo.header.depth || 1, 
-                    '体积纹理的深度（对于2D纹理通常为1）',
-                    'depth'
-                )}
+            'Depth',
+            ddsInfo.header.depth || 1,
+            '体积纹理的深度（对于2D纹理通常为1）',
+            'depth'
+        )}
             </div>
         `;
     }
@@ -531,6 +1002,8 @@ class HTMLGenerator {
                 let startX, startY, translateX = 0, translateY = 0;
 
                 class DDSDecoder {
+
+                    // 修改 decode 方法，添加 DXT3 支持
                     static decode(buffer, format, width, height) {
                         const view = new DataView(buffer);
                         const dataOffset = 128; // DDS header size
@@ -541,10 +1014,12 @@ class HTMLGenerator {
                             return this.decodeUncompressed(view, width, height, dataOffset, format);
                         } else if (format === 'DXT1') {
                             return this.decodeDXT1(view, width, height, dataOffset);
+                        } else if (format === 'DXT3') {
+                            return this.decodeDXT3(view, width, height, dataOffset);
                         } else if (format === 'DXT5') {
                             return this.decodeDXT5(view, width, height, dataOffset);
                         } else {
-                            throw new Error('Unsupported format: ' + format + '. Supported formats: BGRA, BGR, DXT1, DXT5.');
+                            throw new Error('Unsupported format: ' + format + '. Supported formats: BGRA, BGR, DXT1, DXT3, DXT5.');
                         }
                     }
                     
@@ -644,6 +1119,89 @@ class HTMLGenerator {
                         };
                     }
                     
+                    // 在 decodeDXT1 和 decodeDXT5 之间添加 decodeDXT3 方法
+                    static decodeDXT3(view, width, height, dataOffset) {
+                        // DXT3 块压缩格式：每个 4x4 像素块占用 16 字节
+                        const blockWidth = Math.ceil(width / 4);
+                        const blockHeight = Math.ceil(height / 4);
+                        const pixelData = new Uint8ClampedArray(width * height * 4);
+                        
+                        for (let blockY = 0; blockY < blockHeight; blockY++) {
+                            for (let blockX = 0; blockX < blockWidth; blockX++) {
+                                const blockOffset = dataOffset + (blockY * blockWidth + blockX) * 16;
+                                
+                                if (blockOffset + 16 > view.byteLength) {
+                                    continue; // 跳过不完整的块
+                                }
+                                
+                                // 读取alpha值（4位直接存储，每个像素4位，共16个像素）
+                                const alphaValues = new Uint8Array(16);
+                                
+                                // DXT3的alpha存储方式：8字节，每字节存储2个像素的4位alpha值
+                                for (let i = 0; i < 8; i++) {
+                                    const alphaByte = view.getUint8(blockOffset + i);
+                                    const alpha1 = (alphaByte & 0x0F) * 17; // 低4位 (0-15) 映射到 0-255
+                                    const alpha2 = ((alphaByte >> 4) & 0x0F) * 17; // 高4位 (0-15) 映射到 0-255
+                                    
+                                    // 存储到alpha值数组
+                                    alphaValues[i * 2] = alpha1;
+                                    alphaValues[i * 2 + 1] = alpha2;
+                                }
+                                
+                                // 读取颜色值（后8字节，与DXT1相同）
+                                const color0 = view.getUint16(blockOffset + 8, true);
+                                const color1 = view.getUint16(blockOffset + 10, true);
+                                const colorCodes = view.getUint32(blockOffset + 12, true);
+                                
+                                // 将 RGB565 转换为 RGB888
+                                const colors = [
+                                    this.rgb565ToRgb888(color0),
+                                    this.rgb565ToRgb888(color1),
+                                    color0 > color1 ? 
+                                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 1/3) :
+                                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 1/2),
+                                    color0 > color1 ? 
+                                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 2/3) :
+                                        [0, 0, 0, 0] // 透明黑色
+                                ];
+                                
+                                // 解码 4x4 像素块
+                                for (let pixelY = 0; pixelY < 4; pixelY++) {
+                                    for (let pixelX = 0; pixelX < 4; pixelX++) {
+                                        const x = blockX * 4 + pixelX;
+                                        const y = blockY * 4 + pixelY;
+                                        
+                                        if (x >= width || y >= height) {
+                                            continue; // 跳过超出边界的像素
+                                        }
+                                        
+                                        const pixelIndex = pixelY * 4 + pixelX;
+                                        const alpha = alphaValues[pixelIndex];
+                                        
+                                        // 获取颜色索引（每个像素2位）
+                                        const colorCodeIndex = pixelIndex;
+                                        const colorCode = (colorCodes >> (colorCodeIndex * 2)) & 0x03;
+                                        const color = colors[colorCode];
+                                        
+                                        const destIndex = (y * width + x) * 4;
+                                        pixelData[destIndex] = color[0];     // R
+                                        pixelData[destIndex + 1] = color[1]; // G
+                                        pixelData[destIndex + 2] = color[2]; // B
+                                        pixelData[destIndex + 3] = alpha;   // A
+                                    }
+                                }
+                            }
+                        }
+                        
+                        return {
+                            width,
+                            height,
+                            data: pixelData,
+                            format: 'RGBA'
+                        };
+                    }
+
+
                     static decodeDXT5(view, width, height, dataOffset) {
                         // DXT5 块压缩格式：每个 4x4 像素块占用 16 字节
                         const blockWidth = Math.ceil(width / 4);

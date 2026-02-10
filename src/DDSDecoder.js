@@ -254,6 +254,101 @@ class DDSDecoder {
         };
     }
     
+
+
+    // 在 DDSDecoder 类中添加 decodeDXT3 方法
+    /**
+     * 解码 DXT3 格式
+     * @param {Object} buffer - 数据缓冲区适配器
+     * @param {number} width - 宽度
+     * @param {number} height - 高度
+     * @param {number} dataOffset - 数据偏移量
+     * @param {string} format - 格式（未使用，为了接口统一）
+     * @returns {Object} 解码结果
+     */
+    static decodeDXT3(buffer, width, height, dataOffset, format) {
+        // DXT3 块压缩格式：每个 4x4 像素块占用 16 字节
+        const blockWidth = Math.ceil(width / 4);
+        const blockHeight = Math.ceil(height / 4);
+        const pixelData = new Uint8ClampedArray(width * height * 4);
+        
+        for (let blockY = 0; blockY < blockHeight; blockY++) {
+            for (let blockX = 0; blockX < blockWidth; blockX++) {
+                const blockOffset = dataOffset + (blockY * blockWidth + blockX) * 16;
+                
+                if (blockOffset + 16 > buffer.length) {
+                    continue; // 跳过不完整的块
+                }
+                
+                // 读取alpha值（4位直接存储，每个像素4位，共16个像素）
+                const alphaValues = new Uint8Array(16);
+                
+                // DXT3的alpha存储方式：8字节，每字节存储2个像素的4位alpha值
+                for (let i = 0; i < 8; i++) {
+                    const alphaByte = buffer.get(blockOffset + i);
+                    const alpha1 = (alphaByte & 0x0F) * 17; // 低4位 (0-15) 映射到 0-255
+                    const alpha2 = ((alphaByte >> 4) & 0x0F) * 17; // 高4位 (0-15) 映射到 0-255
+                    
+                    // 存储到alpha值数组
+                    alphaValues[i * 2] = alpha1;
+                    alphaValues[i * 2 + 1] = alpha2;
+                }
+                
+                // 读取颜色值（后8字节，与DXT1相同）
+                const color0 = buffer.readUInt16LE(blockOffset + 8);
+                const color1 = buffer.readUInt16LE(blockOffset + 10);
+                const colorCodes = buffer.readUInt32LE(blockOffset + 12);
+                
+                // 将 RGB565 转换为 RGB888
+                const colors = [
+                    this.rgb565ToRgb888(color0),
+                    this.rgb565ToRgb888(color1),
+                    color0 > color1 ? 
+                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 1/3) :
+                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 1/2),
+                    color0 > color1 ? 
+                        this.interpolateColor(this.rgb565ToRgb888(color0), this.rgb565ToRgb888(color1), 2/3) :
+                        [0, 0, 0, 0] // 透明黑色
+                ];
+                
+                // 解码 4x4 像素块
+                for (let pixelY = 0; pixelY < 4; pixelY++) {
+                    for (let pixelX = 0; pixelX < 4; pixelX++) {
+                        const x = blockX * 4 + pixelX;
+                        const y = blockY * 4 + pixelY;
+                        
+                        if (x >= width || y >= height) {
+                            continue; // 跳过超出边界的像素
+                        }
+                        
+                        const pixelIndex = pixelY * 4 + pixelX;
+                        const alpha = alphaValues[pixelIndex];
+                        
+                        // 获取颜色索引（每个像素2位）
+                        const colorCodeIndex = pixelIndex;
+                        const colorCode = (colorCodes >> (colorCodeIndex * 2)) & 0x03;
+                        const color = colors[colorCode];
+                        
+                        const destIndex = (y * width + x) * 4;
+                        pixelData[destIndex] = color[0];     // R
+                        pixelData[destIndex + 1] = color[1]; // G
+                        pixelData[destIndex + 2] = color[2]; // B
+                        pixelData[destIndex + 3] = alpha;   // A
+                    }
+                }
+            }
+        }
+        
+        return {
+            width,
+            height,
+            data: pixelData,
+            format: 'RGBA'
+        };
+    }
+
+
+
     /**
      * 转换 RGB565 到 RGB888
      * @param {number} color565 - RGB565颜色值
