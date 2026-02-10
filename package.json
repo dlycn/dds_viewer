@@ -25,7 +25,7 @@
     "gpu",
     "compression"
   ],
-  "icon": "images/icon.png",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/dlycn/dds-viewer"
