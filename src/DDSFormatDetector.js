@@ -53,7 +53,7 @@ class DDSFormatDetector {
     static getFourCCDescription(fourCC) {
         const formats = {
             'DXT1': 'BC1 / DXT1 Compression',
-            'DXT3': 'BC2 / DXT3 Compression', 
+            'DXT3': 'BC2 / DXT3 Compression',
             'DXT5': 'BC3 / DXT5 Compression',
             'ATI1': 'BC4 Compression',
             'ATI2': 'BC5 Compression',
@@ -63,7 +63,10 @@ class DDSFormatDetector {
             'BC5S': 'BC5 Signed',
             'DX10': 'DX10 Extended Header'
         };
-        return formats[fourCC] || `Uncompressed`;
+        if (formats[fourCC]) return formats[fourCC];
+        if ((pixelFormat.flags & 0x40) !== 0) {
+            return pixelFormat.rgbBitCount === 32 ? (pixelFormat.aBitMask !== 0 ? 'BGRA' : 'BGR') : 'BGR';
+        }
     }
 
     /**
