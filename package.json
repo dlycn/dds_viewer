@@ -1,62 +1,86 @@
 {
   "name": "dds-viewer",
-  "displayName": "DDS Viewer",
-  "description": "A VSCode extension for previewing DDS image files",
-  "version": "0.0.2",
-  "license": "MIT",
+  "displayName": "DDS Image Viewer",
+  "description": "A VSCode extension for viewing DirectDraw Surface (DDS) texture files with export capabilities",
+  "version": "1.0.0",
+  "publisher": "YourPublisherName",
   "engines": {
-    "vscode": "^1.105.0"
+    "vscode": "^1.60.0"
   },
   "categories": [
     "Visualization",
     "Other"
   ],
+  "keywords": [
+    "dds",
+    "texture",
+    "image",
+    "viewer",
+    "directx",
+    "gpu",
+    "compression"
+  ],
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/dds-viewer"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/dds-viewer/issues"
+  },
+  "homepage": "https://github.com/yourusername/dds-viewer#readme",
   "main": "./extension.js",
-  "icon": "./icon.png",
   "contributes": {
     "customEditors": [
       {
-        "viewType": "dds-viewer.preview",
-        "displayName": "DDS Preview",
+        "viewType": "ddsViewer.ddsViewer",
+        "displayName": "DDS Viewer",
         "selector": [
           {
             "filenamePattern": "*.dds"
           }
-        ]
+        ],
+        "priority": "default"
       }
     ],
     "commands": [
       {
-        "command": "dds-viewer.previewDDS",
-        "title": "Preview DDS File",
+        "command": "ddsViewer.exportAsPNG",
+        "title": "Export DDS as PNG",
         "category": "DDS Viewer"
       }
     ],
     "menus": {
-      "command-palette": [
+      "commandPalette": [
         {
-          "command": "dds-viewer.previewDDS"
+          "command": "ddsViewer.exportAsPNG",
+          "when": "editorLangId == dds"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "ddsViewer.exportAsPNG",
+          "when": "resourceExtname == .dds",
+          "group": "navigation"
         }
       ]
     }
   },
-  "scripts": {
-    "lint": "eslint .",
-    "pretest": "npm run lint",
-    "test": "vscode-test",
-    "package": "vsce package",
-    "publish": "vsce publish"
-  },
+  "activationEvents": [
+    "onCustomEditor:ddsViewer.ddsViewer",
+    "onCommand:ddsViewer.exportAsPNG"
+  ],
+  "dependencies": {},
   "devDependencies": {
-    "@types/vscode": "^1.105.0",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "eslint": "^9.36.0",
-    "@vscode/test-cli": "^0.0.11",
-    "@vscode/test-electron": "^2.5.2"
+    "@types/vscode": "^1.60.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://gitcode.com/StarsAll_InFrost/dds-viewer.git"
-  }
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "echo No compilation needed for JavaScript",
+    "watch": "echo No watch script configured",
+    "pretest": "npm run compile",
+    "test": "echo No tests configured",
+    "lint": "echo No linter configured"
+  },
+  "extensionDependencies": []
 }
