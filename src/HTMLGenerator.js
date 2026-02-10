@@ -473,17 +473,6 @@ class HTMLGenerator {
                         </div>
                     </div>
                 </div>
-
-                <div class="error-summary">
-                    <div class="error-header">
-                        <span class="error-icon">⚠️</span>
-                        <h3>错误摘要</h3>
-                    </div>
-                    <div class="error-message">
-                        <code>${ddsInfo.error}</code>
-                    </div>
-                </div>
-
                 <div class="content-grid">
                     ${errorDetails.fileSize ? `
                     <div class="info-card">
