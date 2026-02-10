@@ -3,11 +3,10 @@
 
 # DDS Viewer – Visual Studio Code Extension
 
-![DDS Viewer Logo](https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/raw/main/icon.png)
-
 A DDS image preview tool designed for mod developers, enabling rapid texture inspection and format evaluation to support informed graphics format selection.
 
 <p align="center">
+  <img src="https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/raw/main/icon.png" alt="DDS Viewer Logo">
   <a href="README.md">中文</a> | 
   <a href="README_en.md">English</a>
 </p>

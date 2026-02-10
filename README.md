@@ -1,10 +1,9 @@
 # DDS Viewer - VSCode扩展
 
-![DDS Viewer Logo](https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/raw/main/icon.png)
-
 一个为Mod开发者设计的DDS图像预览工具，帮助您快速查看和评估纹理尺寸，为选择合适的图形格式提供参考。
 
 <p align="center">
+  <img src="https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/raw/main/icon.png" alt="DDS Viewer Logo">
   <a href="README.md">中文</a> | 
   <a href="README_en.md">English</a>
 </p>
