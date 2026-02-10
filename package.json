@@ -3,7 +3,12 @@
   "displayName": "DDS Image Viewer",
   "description": "A VSCode extension for viewing DirectDraw Surface (DDS) texture files with export capabilities",
   "version": "1.0.0",
-  "publisher": "YourPublisherName",
+  "publisher": "dlycn",
+  "author": {
+    "name": "Liuyang Ding",
+    "email": "dlycn749007@outlook.com"
+  },
+  "license": "MIT",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -23,12 +28,12 @@
   "icon": "images/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/dds-viewer"
+    "url": "https://github.com/dlycn/dds-viewer"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/dds-viewer/issues"
+    "url": "https://github.com/dlycn/dds-viewer/issues"
   },
-  "homepage": "https://github.com/yourusername/dds-viewer#readme",
+  "homepage": "https://github.com/dlycn/dds-viewer#readme",
   "main": "./extension.js",
   "contributes": {
     "customEditors": [
