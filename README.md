@@ -5,7 +5,7 @@
 <p align="center">
   <img src="https://raw.gitcode.com/StarsAll_InFrost/dds-viewer/raw/main/icon.png" alt="DDS Viewer Logo">
   <a href="README.md">中文</a> | 
-  <a href="README_en.md">English</a>
+  <a href="readme_en.md">English</a>
 </p>
 
 ## 📋 使用前说明
