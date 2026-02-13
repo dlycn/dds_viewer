@@ -22,11 +22,11 @@ A DDS image preview tool designed for mod developers, enabling rapid texture ins
 ## ⚙️ Getting Started
 
 <div align="center">
-  <img src="shows/1.png" alt="DDS Viewer 示例1" width="45%">
-  <img src="shows/2.png" alt="DDS Viewer 示例2" width="45%">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/1.png" alt="DDS Viewer example1" width="45%">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/2.png" alt="DDS Viewer example2" width="45%">
   <br>
-  <img src="shows/3.png" alt="DDS Viewer 示例3" width="45%">
-  <img src="shows/4.png" alt="DDS Viewer 示例4" width="45%">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/3.png" alt="DDS Viewer example3" width="45%">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/4.png" alt="DDS Viewer example4" width="45%">
 </div>
 
 ## ✨ Core Features

@@ -19,11 +19,11 @@
 ## ⚙️ 运行示例
 
 <div align="center">
-  <img src="shows/1.png" alt="DDS Viewer 示例1" width="45%">
-  <img src="shows/2.png" alt="DDS Viewer 示例2" width="45%">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/1.png" alt="DDS Viewer 示例1" width="45%">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/2.png" alt="DDS Viewer 示例2" width="45%">
   <br>
-  <img src="shows/3.png" alt="DDS Viewer 示例3" width="45%">
-  <img src="shows/4.png" alt="DDS Viewer 示例4" width="45%">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/3.png" alt="DDS Viewer 示例3" width="45%">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/4.png" alt="DDS Viewer 示例4" width="45%">
 </div>
 
 
