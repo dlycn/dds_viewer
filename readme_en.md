@@ -6,7 +6,7 @@
 A DDS image preview tool designed for mod developers, enabling rapid texture inspection and format evaluation to support informed graphics format selection.
 
 <p align="center">
-  <img src="icon.png" alt="DDS Viewer Logo">
+  <img src="https://github.com/dlycn/dds_viewer/raw/main/icon.png" alt="DDS Viewer Logo">
 </p>
 <div align="center">
   <a href="README.md">中文</a> | 
