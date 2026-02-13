@@ -1,4 +1,5 @@
 ## <span id="中文">🇨🇳 中文版本</span>
+
 # DDS Viewer - VSCode扩展
 
 一个为Mod开发者设计的DDS图像预览工具，帮助您快速查看和评估纹理尺寸，为选择合适的图形格式提供参考。
@@ -20,11 +21,11 @@
 ## ⚙️ 运行示例
 
 <div align="center">
-  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/1.png" alt="DDS Viewer 示例1" width="45%">
-  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/2.png" alt="DDS Viewer 示例2" width="45%">
+  <img src="/shows/1.png" alt="DDS Viewer 示例1" width="45%">
+  <img src="/shows/2.png" alt="DDS Viewer 示例2" width="45%">
   <br>
-  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/3.png" alt="DDS Viewer 示例3" width="45%">
-  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/4.png" alt="DDS Viewer 示例4" width="45%">
+  <img src="/shows/3.png" alt="DDS Viewer 示例3" width="45%">
+  <img src="/shows/4.png" alt="DDS Viewer 示例4" width="45%">
 </div>
 
 
@@ -145,6 +146,7 @@ DDS（DirectDraw Surface）是DirectX的标准纹理格式，主要优势：
 
 ---
 ## <span id="english">🇬🇧 English Version</span>
+
 # DDS Viewer – Visual Studio Code Extension
 
 A DDS image preview tool designed for mod developers, enabling rapid texture inspection and format evaluation to support informed graphics format selection.
@@ -166,11 +168,11 @@ A DDS image preview tool designed for mod developers, enabling rapid texture ins
 ## ⚙️ Getting Started
 
 <div align="center">
-  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/1.png" alt="DDS Viewer example1" width="45%">
-  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/2.png" alt="DDS Viewer example2" width="45%">
+  <img src="/shows/1.png" alt="DDS Viewer example1" width="45%">
+  <img src="/shows/2.png" alt="DDS Viewer example2" width="45%">
   <br>
-  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/3.png" alt="DDS Viewer example3" width="45%">
-  <img src="https://github.com/dlycn/dds_viewer/raw/main/shows/4.png" alt="DDS Viewer example4" width="45%">
+  <img src="/shows/3.png" alt="DDS Viewer example3" width="45%">
+  <img src="/shows/4.png" alt="DDS Viewer example4" width="45%">
 </div>
 
 ## ✨ Core Features
